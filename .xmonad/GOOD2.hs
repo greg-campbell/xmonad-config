@@ -1,0 +1,1 @@
+/home/gregcamp/.xmonad/GOOD2.hs
