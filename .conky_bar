@@ -1,0 +1,22 @@
+gap_y -1000
+ 
+background no
+double_buffer yes 
+out_to_console yes 
+own_window yes 
+own_window_type desktop
+update_interval 1.0 
+short_units yes
+use_spacer right
+font "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
+
+TEXT
+^i(.icons/sm4tik/cpu.xbm) ${cpu cpu0}% \
+^i(.icons/sm4tik/cpu.xbm) ${cpu cpu1}% \
+^i(.icons/sm4tik/mem.xbm) $memperc% \
+^i(.icons/sm4tik/net_down_01.xbm) ${downspeed eth0} \
+^i(.icons/sm4tik/net_up_01.xbm) ${upspeed eth0} \
+^i(.icons/sm4tik/arch.xbm) ${entropy_avail}/${entropy_poolsize} \
+^i(.icons/sm4tik/pause.xbm) ${processes} \
+^i(.icons/sm4tik/play.xbm) ${running_processes} \
+^i(.icons/sm4tik/clock.xbm) ${time %a, %b %_d %Y %l:%M:%S%p} 
