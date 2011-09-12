@@ -50,6 +50,8 @@ main = do
         { manageHook = manageDocks <+> myManageHook <+> manageHook defaultConfig
         , normalBorderColor = myInactiveBorderColor
         , focusedBorderColor = myActiveBorderColor
+        , borderWidth = 2
+        , focusFollowsMouse = False
         , terminal = "gnome-terminal"
         , layoutHook = avoidStruts $ myLayoutHook 
         , logHook = dynamicLogWithPP $ myDzenPP myStatusBarPipe
@@ -155,7 +157,7 @@ myWorkspaces =
 myUrgencyHook = withUrgencyHook dzenUrgencyHook
     {
         args = [
-            "-x", "0", "-y", "576", "-h", "15", "-w", "1024",
+            "-x", "0", "-y", "16", "-h", "15", "-w", "1920",
             "-ta", "r",
             "-fg", "" ++ myUrgencyHintFgColor ++ "",
             "-bg", "" ++ myUrgencyHintBgColor ++ ""
