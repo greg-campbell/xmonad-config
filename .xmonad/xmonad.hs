@@ -16,6 +16,8 @@ import XMonad.Layout.StackTile
 import XMonad.Layout.Spiral
 import XMonad.Layout.Tabbed
 import XMonad.Layout.IM
+import XMonad.Layout.Accordion
+import XMonad.Layout.Dishes
 
 import XMonad.Actions.UpdatePointer
 --import XMonad.Actions.Promote
@@ -122,13 +124,15 @@ lightTextColor = "#fffff0"
 backgroundColor = "#304520"
 lightBackgroundColor = "#456030"
 urgentColor = "#ffc000"
- 
 myLayoutHook = smartBorders $ (tiled 
                             ||| Mirror tiled 
                             ||| Full
                             ||| tabbed shrinkText myTheme
-                            ||| spiral (1 % 1)
+                            ||| spiral (16 % 9)
                             ||| imLayout
+                            ||| Accordion
+                            ||| Dishes 2 (1 % 6)
+                            ||| Grid 
                             )
     where
         tiled = ResizableTall nmaster delta ratio []
@@ -188,6 +192,10 @@ newKeys conf@(XConfig {XMonad.modMask = modm}) = [
     -- Do not leave unless conky, dzen and xxkb after restart
     , ((modm, xK_q), spawn "killall conky dzen2 xxkb; xmonad --recompile; xmonad --restart")
     , ((modm .|. controlMask, xK_x), spawn "gnome-screensaver-command --lock")
+    , ((controlMask, xK_Print), spawn "setxkbmap -model pc105 -layout us")
+    , ((controlMask, xK_Pause), spawn "gnome-terminal")
+    , ((modm .|. controlMask, xK_d), spawn "setxkbmap -model pc105 -layout dvorak")
+    , ((modm .|. controlMask, xK_q), spawn "setxkbmap -model pc105 -layout us")
     , ((modm, xK_b), spawn "firefox")
     , ((modm, xK_u), spawn "dmenu_run -b -nb '#222222' -nf '#aaaaaa' -sb '#93d44f' -sf '#222222'")
     ]
@@ -211,6 +219,9 @@ myDzenPP h = defaultPP
                         "Tabbed Simplest" -> wrapBitmap "sm4tik/mail.xbm"
                         "Spiral" -> wrapBitmap "sm4tik/fs_01.xbm"
                         "IM" -> wrapBitmap "sm4tik/test.xbm"
+                        "Accordion" -> wrapBitmap "sm4tik/mem.xbm"
+                        "Grid" -> wrapBitmap "sm4tik/stop.xbm"
+                        "Dishes 2 (1 % 6)" -> wrapBitmap "sm4tik/dish.xbm"
                     )
     }
     where
