@@ -5,9 +5,11 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
 
+import qualified XMonad.StackSet as W 
 import XMonad.Layout
 import XMonad.Layout.NoBorders
 import XMonad.Layout.ResizableTile
+import XMonad.Layout.MouseResizableTile
 import XMonad.Layout.LayoutHints
 import XMonad.Layout.PerWorkspace
 import XMonad.Layout.HintedTile
@@ -17,8 +19,13 @@ import XMonad.Layout.Spiral
 import XMonad.Layout.Tabbed
 import XMonad.Layout.IM
 import XMonad.Layout.Accordion
+import XMonad.Layout.Circle
 import XMonad.Layout.Dishes
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
+import XMonad.Layout.BoringWindows
 
+import XMonad.Actions.GridSelect
 import XMonad.Actions.UpdatePointer
 --import XMonad.Actions.Promote
 --import XMonad.Actions.Warp
@@ -124,15 +131,30 @@ lightTextColor = "#fffff0"
 backgroundColor = "#304520"
 lightBackgroundColor = "#456030"
 urgentColor = "#ffc000"
-myLayoutHook = smartBorders $ (tiled 
-                            ||| Mirror tiled 
-                            ||| Full
-                            ||| tabbed shrinkText myTheme
-                            ||| spiral (16 % 9)
-                            ||| imLayout
-                            ||| Accordion
+myLayoutHook = windowNavigation $ smartBorders $ boringWindows
+                  $ subLayout [] (
+                             mouseResizableTile 
+                             ||| mouseResizableTileMirrored
+                             ||| tabbed shrinkText myTheme
+                             ||| Dishes 2 (1 % 6) 
+                             ||| spiral (16 % 9)
+                             ||| Grid 
+                             ||| Circle
+                             ) -- ||| Tall 1 0.2 0.5 ||| Circle)
+                  $ (
+                            --  tiled 
+                                mouseResizableTile
+                            -- ||| Mirror tiled 
+                            ||| mouseResizableTileMirrored
+                            -- ||| Full
                             ||| Dishes 2 (1 % 6)
                             ||| Grid 
+                            ||| Circle
+                            -- ||| spiral (16 % 9)
+                            ||| StackTile 2 (3/100) (1 / 2)
+                            ||| Accordion
+                            ||| tabbed shrinkText myTheme
+                            ||| imLayout
                             )
     where
         tiled = ResizableTall nmaster delta ratio []
@@ -191,13 +213,34 @@ newKeys conf@(XConfig {XMonad.modMask = modm}) = [
       ((modm, xK_p), shellPrompt myXPConfig)
     -- Do not leave unless conky, dzen and xxkb after restart
     , ((modm, xK_q), spawn "killall conky dzen2 xxkb; xmonad --recompile; xmonad --restart")
+    , ((modm .|. controlMask, xK_p), spawn "exec xlogo -render -fg `randomdarkcolor` -bg `randomdarkcolor`") -- For testing layouts.
     , ((modm .|. controlMask, xK_x), spawn "gnome-screensaver-command --lock")
-    , ((controlMask, xK_Print), spawn "setxkbmap -model pc105 -layout us")
+    , ((controlMask, xK_Print), spawn "setxkbmap -model pc105 -option \"grp:switch,grp:caps_toggle,grp_led:caps\" us,dvorak")
     , ((controlMask, xK_Pause), spawn "gnome-terminal")
     , ((modm .|. controlMask, xK_d), spawn "setxkbmap -model pc105 -layout dvorak")
     , ((modm .|. controlMask, xK_q), spawn "setxkbmap -model pc105 -layout us")
     , ((modm, xK_b), spawn "firefox")
     , ((modm, xK_u), spawn "dmenu_run -b -nb '#222222' -nf '#aaaaaa' -sb '#93d44f' -sf '#222222'")
+    , ((modm .|. controlMask, xK_h), sendMessage $ pullGroup L)
+    , ((modm .|. controlMask, xK_l), sendMessage $ pullGroup R)
+    , ((modm .|. controlMask, xK_k), sendMessage $ pullGroup U)
+    , ((modm .|. controlMask, xK_j), sendMessage $ pullGroup D)
+
+    , ((modm .|. controlMask, xK_m), withFocused (sendMessage . MergeAll))
+    , ((modm .|. controlMask, xK_u), withFocused (sendMessage . UnMerge))
+        --, ((modm .|. controlMask, xK_period), sendMessage $ n NextLayout)
+    , ((modm,               xK_Tab   ), windows W.focusDown)
+    , ((modm,               xK_j     ), windows W.focusDown)
+    , ((modm,               xK_k     ), windows W.focusUp  )
+    , ((modm,               xK_m     ), windows W.focusMaster)
+    , ((modm,               xK_t     ), withFocused $ windows . W.sink)
+    , ((modm .|. controlMask, xK_period), onGroup W.focusUp')
+    , ((modm .|. controlMask, xK_comma), onGroup W.focusDown')
+    , ((modm, xK_j), focusDown)
+    , ((modm, xK_k), focusUp)
+    , ((modm .|. controlMask, xK_space), toSubl NextLayout )
+    , ((modm, xK_g), goToSelected defaultGSConfig)
+
     ]
 
 -- Dzen config
@@ -213,15 +256,21 @@ myDzenPP h = defaultPP
     , ppTitle = (\x -> " " ++ wrapFg myTitleFgColor x)
     , ppLayout = dzenColor myFgColor"" .
                     (\x -> case x of
+                        "MouseResizableTile" -> wrapBitmap "dzen_bitmaps/tall.xbm"
+                        "MouseResizableTileMirrored" -> wrapBitmap "dzen_bitmaps/mtall.xbm"
                         "ResizableTall" -> wrapBitmap "dzen_bitmaps/tall.xbm"
                         "Mirror ResizableTall" -> wrapBitmap "dzen_bitmaps/mtall.xbm"
                         "Full" -> wrapBitmap "dzen_bitmaps/full.xbm"
-                        "Tabbed Simplest" -> wrapBitmap "sm4tik/mail.xbm"
-                        "Spiral" -> wrapBitmap "sm4tik/fs_01.xbm"
+                        "Tabbed Simplest" -> wrapBitmap "sm4tik/full.xbm"
+                        -- "Spiral" -> wrapBitmap "sm4tik/fs_01.xbm"
                         "IM" -> wrapBitmap "sm4tik/test.xbm"
                         "Accordion" -> wrapBitmap "sm4tik/mem.xbm"
                         "Grid" -> wrapBitmap "sm4tik/stop.xbm"
                         "Dishes 2 (1 % 6)" -> wrapBitmap "sm4tik/dish.xbm"
+                        "Dishes 1 (1 % 6)" -> wrapBitmap "sm4tik/dish.xbm"
+                        "Dishes 3 (1 % 6)" -> wrapBitmap "sm4tik/dish.xbm"
+                        "StackTile" -> "ST"
+                        "Circle" -> wrapBitmap "sm4tik/full.xbm"
                     )
     }
     where
